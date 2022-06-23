@@ -1,13 +1,3 @@
-import Constants from '../constants';
-
-const {
-  CLUB_CREATION_COST,
-  CLUB_ENTRY_COST,
-  CLUB_MEMBERS_LIMIT,
-  DONATION_REQUEST_EXPIRATION_MINUTES,
-  MANDATORY_MINUTES_SINCE_LAST_DONATION_REQUEST,
-} = Constants;
-
 const ERRORS = {
   INTERNAL_SERVER: {
     code: -1,

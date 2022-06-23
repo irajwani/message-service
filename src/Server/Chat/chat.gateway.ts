@@ -12,8 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { AddMessageDto } from './Validation/add-message.dto';
 import { JoinRoomDto } from './Validation/join-room.dto';
 import { LeaveRoomDto } from './Validation/leave-room.dto';
-// import { KickUserDto } from './Validation/kick-user.dto';
-import { BanUserDto } from './Validation/ban-user.dto';
+
 import { UserService } from '../User/user.service';
 import { AuthService } from '../Auth/auth.service';
 import { RoomService } from '../Room/room.service';

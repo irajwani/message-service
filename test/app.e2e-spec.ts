@@ -1,24 +1,48 @@
 import * as request from 'supertest';
-import { Test } from '@nestjs/testing';
-import { AppModule } from './../src/app.module';
 import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { AppModule } from '../src/app.module';
+import { healthCheckResponseMock } from './Mocks/healthCheck';
+import { UserService } from '../src/Server/User/user.service';
 
-describe('AppController (e2e)', () => {
+describe('App (e2e)', () => {
   let app: INestApplication;
+  const userService = {
+    getUser: jest.fn((id: string) => ({})),
+  };
 
   beforeAll(async () => {
-    const moduleFixture = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+      controllers: [],
+    })
+      .overrideProvider(UserService)
+      .useValue(userService)
+      .compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleRef.createNestApplication();
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
   });
+
+  describe('Health', () => {
+    it('should say app is healthy', async () => {
+      return request(app.getHttpServer())
+        .get('/health')
+        .expect(200)
+        .expect(healthCheckResponseMock);
+    });
+  });
+
+  // describe('User', () => {
+  //   it(`/GET :userId should return expected user`, async () => {
+  //     const body = {
+  //     };
+  //     const expected = userService.getRates(body);
+  //     return requestFunction('/users/', body, expected, app);
+  //   });
+  // });
 });

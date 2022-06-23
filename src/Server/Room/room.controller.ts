@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../Auth/jwt.guard';
 import { OwnershipGuard } from './ownership.guard';
 import { CreateRoomDto } from './Validation';
 import { RequestWithUser } from '../../Common/Types/request-with-user';
-import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AddMessageDto } from '../Chat/Validation/add-message.dto';
 
 @ApiTags('rooms')

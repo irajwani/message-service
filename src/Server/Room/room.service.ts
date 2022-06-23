@@ -9,7 +9,7 @@ import { CreateRoomDto, UpdateRoomDto } from './Validation';
 import { IRoom } from './Types/room';
 import { AddMessageDto } from '../Chat/Validation/add-message.dto';
 import { IMessage } from './Types/message';
-import { BanUserDto } from '../Chat/Validation/ban-user.dto';
+
 import {
   BlockedUserException,
   InternalServerException,
@@ -74,6 +74,8 @@ export class RoomService {
 
     const { _id: senderId, room: senderRoomId } =
       await this.userService.getUser(sender);
+
+    // todo: this service should utilize DB transactions to ensure atomicity of DB across multiple DB operations.
 
     if (!senderRoomId || roomId !== senderRoomId.toString()) {
       await this.userService.updateUserRoom(sender, roomId);

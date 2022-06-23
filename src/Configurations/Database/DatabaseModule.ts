@@ -7,7 +7,6 @@ export default MongooseModule.forRootAsync({
   imports: [DatabaseConfig],
   useFactory: async (configService: ConfigService) => ({
     uri: configService.get('database').uri,
-    // useCreateIndex: true,
     autoIndex: true,
   }),
   inject: [ConfigService],

@@ -8,11 +8,12 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { LocalAuthGuard } from './local.guard';
 import { CreateUserDto, LoginUserDto } from './Validation';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
+import { RequestWithUser } from '../../Common/Types/request-with-user';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,14 +22,18 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() body: CreateUserDto, @Res() response?: Response) {
-    const user = await this.authService.register(body);
-    return response.status(HttpStatus.OK).json(user);
+    const accessToken = await this.authService.register(body);
+    return response.status(HttpStatus.OK).json(accessToken);
   }
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Req() req, @Body() body: LoginUserDto) {
-    return this.authService.login(req.user);
+  async login(
+    @Req() req: RequestWithUser,
+    @Body() body: LoginUserDto,
+    @Res() response?: Response,
+  ) {
+    const accessToken = await this.authService.login(req.user);
+    return response.status(HttpStatus.OK).json(accessToken);
   }
 }

@@ -72,9 +72,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     addMessageDto.sender = userId;
     addMessageDto.roomId = user.room;
 
-    await this.roomService.addMessage(addMessageDto);
+    const message = await this.roomService.addMessage(addMessageDto);
 
-    client.to(user.room).emit('message', [addMessageDto.text]);
+    client.emit('message', [message.text]);
   }
 
   @SubscribeMessage('join')
@@ -95,7 +95,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.userService.updateUserRoom(userId, room._id);
 
     client.join(roomId);
-
     client.emit('message', messages);
   }
 

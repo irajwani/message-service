@@ -19,6 +19,6 @@ import { AuthController } from './Server/Auth/auth.controller';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes(AuthController);
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

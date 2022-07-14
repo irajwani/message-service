@@ -5,19 +5,22 @@ const { ObjectId } = MongooseSchema.Types;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ required: true, unique: true, type: String })
+  @Prop({ required: true })
+  _id: string;
+
+  @Prop({ required: true, unique: true })
   username: string;
 
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   name: string;
 
-  @Prop({ type: ObjectId, ref: 'Room', required: false })
+  @Prop({ ref: 'Room', required: false })
   room: string;
 
-  @Prop({ type: [ObjectId], ref: 'User', default: [], required: false })
+  @Prop({ ref: 'User', default: [], required: false })
   blockedUsers: string[];
 }
 

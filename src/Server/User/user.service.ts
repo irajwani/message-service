@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { User, UserDocument } from '../../Schemas/user.schema';
 import { CreateUserDto } from '../Auth/Validation';
 import { IUser } from './Types/user';
@@ -23,11 +24,12 @@ export class UserService {
 
   public async create(user: CreateUserDto): Promise<IUser> {
     try {
-      return await this.userRepository.create(user);
+      return await this.userRepository.create({ _id: uuidv4(), ...user });
     } catch (e) {
       if (e.code === MongooseErrorCodes.UniquePropViolation) {
         throw new UserExistsException();
       }
+      console.log(e);
       throw new InternalServerException();
     }
   }

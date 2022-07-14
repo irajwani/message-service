@@ -1,7 +1,8 @@
 export interface IMessage {
   _id: string;
   text: string;
-  user: string;
+  sender: string;
+  recipient: string;
   room: string;
   createdAt?: string;
   updatedAt?: string;

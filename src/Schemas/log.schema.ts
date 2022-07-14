@@ -6,6 +6,9 @@ const { ObjectId } = MongooseSchema.Types;
 
 @Schema({ timestamps: true })
 export class Log {
+  @Prop({ required: true })
+  _id: string;
+
   @Prop()
   text: string;
 

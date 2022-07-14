@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Room, RoomDocument } from '../../Schemas/room.schema';
 import { Message, MessageDocument } from '../../Schemas/message.schema';
@@ -57,6 +58,7 @@ export class RoomService {
 
   async create(createRoomDto: CreateRoomDto): Promise<IRoom> {
     const room = await this.roomRepository.create({
+      _id: uuidv4(),
       ...createRoomDto,
       users: [createRoomDto.createdBy],
     });
@@ -98,10 +100,12 @@ export class RoomService {
         await this.updateRoomWithUser({ roomId, user: recipientId });
       }
 
-      const message = await this.messageRepository.create({
+      const message: IMessage = await this.messageRepository.create({
+        _id: uuidv4(),
         text,
         room,
-        user: senderId,
+        sender: senderId,
+        recipient: recipientId,
       });
       await this.roomRepository.updateOne(
         { _id: roomId },

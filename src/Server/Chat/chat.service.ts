@@ -13,7 +13,9 @@ export class ChatService {
   ) {}
 
   public async getUserMessages(user: string): Promise<IMessage[]> {
-    const messages = await this.messageRepository.find({ user }).lean();
+    const messages = await this.messageRepository
+      .find({ $or: [{ sender: user }, { recipient: user }] })
+      .lean();
     if (!messages) throw new NoMessagesException();
     return messages;
   }

@@ -6,19 +6,22 @@ const { ObjectId } = MongooseSchema.Types;
 
 @Schema({ timestamps: true })
 export class Room {
+  @Prop({ required: true })
+  _id: string;
+
   @Prop()
   name: string;
 
   @Prop()
   description: string;
 
-  @Prop({ type: ObjectId, ref: 'User' })
+  @Prop({ ref: 'User' })
   createdBy: string;
 
-  @Prop({ type: [ObjectId], ref: 'User' })
+  @Prop({ ref: 'User' })
   users: string[];
 
-  @Prop({ type: [ObjectId], ref: 'User' })
+  @Prop({ ref: 'User' })
   bannedUsers: string[];
 
   @Prop({ type: [ObjectId], ref: 'Message' })

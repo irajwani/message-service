@@ -5,15 +5,22 @@ const { ObjectId } = MongooseSchema.Types;
 
 @Schema({ timestamps: true })
 export class Message {
+  @Prop({ required: true })
+  _id: string;
+
   @Prop()
   text: string;
 
-  @Prop({ type: ObjectId, ref: 'User' })
-  user: string;
+  @Prop({ ref: 'User' })
+  sender: string;
 
-  @Prop({ type: ObjectId, ref: 'Room' })
+  @Prop({ ref: 'User' })
+  recipient: string;
+
+  @Prop({ ref: 'Room' })
   room: string;
 }
 
 export type MessageDocument = Message & Document;
 export const MessageSchema = SchemaFactory.createForClass(Message);
+export default { name: Message.name, schema: MessageSchema };

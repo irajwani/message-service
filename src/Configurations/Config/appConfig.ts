@@ -8,8 +8,8 @@ export default ConfigRegisterAs({
     coreCount: process.env.APP_CORE || '2',
     port: parseInt(process.env.PORT || '3000'),
     nodeEnv: process.env.NODE_ENV || 'dev',
-    swaggerEnabled: process.env.SWAGGER_ENABLED,
-    accessTokenSecretKey: process.env.ACCESS_TOKEN_SECRET_KEY,
+    swaggerEnabled: process.env.SWAGGER_ENABLED || 'true',
+    accessTokenSecretKey: process.env.ACCESS_TOKEN_SECRET_KEY || 'secret', // for development purposes
     accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION || '7d',
   }),
   validationSchema: Joi.object().keys({

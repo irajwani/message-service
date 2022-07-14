@@ -24,7 +24,7 @@ export class Room {
   @Prop({ ref: 'User' })
   bannedUsers: string[];
 
-  @Prop({ type: [ObjectId], ref: 'Message' })
+  @Prop({ ref: 'Message' })
   messages: IMessage[] | [];
 }
 

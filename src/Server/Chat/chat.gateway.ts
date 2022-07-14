@@ -29,7 +29,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  connectedUsers: Map<string, string> = new Map();
+  // public connectedSockets: Map<string, any[]> = new Map();
+
+  public connectedSockets: Map<string, Socket[]> = new Map();
 
   constructor(
     private readonly userService: UserService,
@@ -38,6 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   async handleConnection(client: Socket): Promise<void> {
+    // todo: retrieve token from req object
     const token = client.handshake.query.token.toString();
     const room = client.handshake.query.room.toString();
     const payload = this.authService.verifyAccessToken(token);
@@ -49,7 +52,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.connectedUsers.set(client.id, user._id);
+    if(!this.connectedSockets.has(client.id)) this.connectedSockets.set(client.id, []);
+
+    const existingClients: Socket[] | [] = this.connectedSockets.get(client.id);
+    this.connectedSockets.set(client.id, [...existingClients, client ]);
 
     if (room || user.room) {
       return this.onRoomJoin(client, { roomId: room });
@@ -57,7 +63,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(client: Socket) {
-    this.connectedUsers.delete(client.id);
+    this.connectedSockets.delete(client.id);
   }
 
   @SubscribeMessage('message')
@@ -86,7 +92,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!room) return;
 
-    const userId = this.connectedUsers.get(client.id);
+    const userId = this.connectedSockets.get(client.id);
     const messages = room.messages
       .slice(limit * -1)
       .map((message) => message.text);
@@ -101,7 +107,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('leave')
   async onRoomLeave(client: Socket, leaveRoomDto: LeaveRoomDto) {
     const { roomId } = leaveRoomDto;
-    const userId = this.connectedUsers.get(client.id);
+    const userId = this.connectedSockets.get(client.id);
 
     await this.userService.updateUserRoom(userId, null);
 

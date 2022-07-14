@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {Injectable, NotFoundException, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Room, RoomDocument } from '../../Schemas/room.schema';
@@ -16,17 +17,64 @@ import {
   InternalServerException,
   RoomNotFoundException,
 } from '../../Common/Errors';
+import { ChatGateway } from "../Chat/chat.gateway";
 
 @Injectable()
-export class RoomService {
+export class RoomService implements OnModuleInit, OnModuleDestroy {
+  public redisClient: Redis;
+  public publisherClient: Redis;
+  private subscriberClient: Redis;
+  private discoveryInterval;
+  private readonly serviceId: string;
+
   constructor(
+    private readonly chatGateway: ChatGateway,
+
     @InjectModel(Room.name) private roomRepository: Model<RoomDocument>,
 
     @InjectModel(Message.name)
     private messageRepository: Model<MessageDocument>,
 
     private readonly userService: UserService,
-  ) {}
+  ) {
+    this.serviceId = 'SOCKET_CHANNEL_' + Math.random()
+        .toString(26)
+        .slice(2);
+  }
+
+  async onModuleInit() {
+
+    this.redisClient = await this.newRedisClient();
+    this.subscriberClient = await this.newRedisClient();
+    this.publisherClient = await this.newRedisClient();
+
+    this.subscriberClient.subscribe(this.serviceId);
+
+    this.subscriberClient.on('message', (channel, message) => {
+      const { userId, payload } = JSON.parse(message);
+      this.addMessage(userId, payload, true);
+    });
+
+    await this.channelDiscovery();
+  }
+
+  private async newRedisClient() {
+    return new Redis({
+      host: 'localhost',
+      port: 6379,
+    });
+  }
+
+  async onModuleDestroy() {
+    this.discoveryInterval && clearTimeout(this.discoveryInterval);
+  }
+
+  private async channelDiscovery() {
+    this.redisClient.setex(this.serviceId, 3, Date.now().toString());
+    this.discoveryInterval = setTimeout(() => {
+      this.channelDiscovery();
+    }, 2000);
+  }
 
   async findAll(): Promise<IRoom[]> {
     const rooms = await this.roomRepository.find().populate('messages');
@@ -109,7 +157,7 @@ export class RoomService {
       });
       await this.roomRepository.updateOne(
         { _id: roomId },
-        { messages: [...room.messages, message._id] },
+        { $push: { messages: message._id } },
       );
       return message;
     } catch (e) {
@@ -121,7 +169,7 @@ export class RoomService {
     try {
       await this.roomRepository.updateOne(
         { _id: roomId },
-        { $addToSet: { users: [user] } },
+        { $addToSet: { users: user } },
       );
     } catch (e) {
       throw new RoomNotFoundException();

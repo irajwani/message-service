@@ -20,6 +20,6 @@ import { User, UserSchema } from '../../Schemas/user.schema';
     RoomModule,
   ],
   providers: [ChatGateway, ChatService, UserService],
-  exports: [ChatService],
+  exports: [ChatGateway, ChatService],
 })
 export class ChatModule {}

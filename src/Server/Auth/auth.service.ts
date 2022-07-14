@@ -59,6 +59,7 @@ export class AuthService {
       const payload = this.jwtService.verify(accessToken);
       return payload;
     } catch (err) {
+      // todo: what happens on verification fail?
       return null;
     }
   }

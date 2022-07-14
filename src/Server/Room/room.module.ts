@@ -5,6 +5,7 @@ import { RoomService } from './room.service';
 import { UserModule } from '../User/user.module';
 import { Room, RoomSchema } from '../../Schemas/room.schema';
 import { Message, MessageSchema } from '../../Schemas/message.schema';
+import { ChatModule } from "../Chat/chat.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Message, MessageSchema } from '../../Schemas/message.schema';
       { name: Message.name, schema: MessageSchema },
     ]),
     UserModule,
+    ChatModule,
   ],
   controllers: [RoomController],
   providers: [RoomService],

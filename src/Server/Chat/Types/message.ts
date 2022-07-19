@@ -3,7 +3,6 @@ export interface IMessage {
   text: string;
   sender: string;
   recipient: string;
-  room: string;
   createdAt?: string;
   updatedAt?: string;
 }

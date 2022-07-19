@@ -1,10 +1,19 @@
 version: '3.7'
 services:
+  redis:
+    container_name: redis
+    image: redis:latest
+#    networks:
+#      - webnet
+    env_file:
+      - docker.env
+    ports:
+      - 6379:6379
   mongodb:
     container_name: mongodb
     image: mongo:latest
-    networks:
-      - webnet
+#    networks:
+#      - webnet
     env_file:
       - docker.env
     environment:
@@ -12,8 +21,9 @@ services:
       DB_PORT: ${DB_PORT}
     ports:
       - ${DB_PORT}:${DB_PORT}
-  main:
-    container_name: main
+  server1:
+    hostname: server1
+    container_name: server1
     build:
       context: .
       target: dev
@@ -23,11 +33,40 @@ services:
     env_file:
       - docker.env
     ports:
-      - ${PORT}:${PORT}
-    networks:
-      - webnet
+      - 81:${PORT}
+#    networks:
+#      - webnet
     depends_on:
+      - redis
       - mongodb
     command: npm run start:dev
-networks:
-  webnet:
+  server2:
+    hostname: server2
+    container_name: server2
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - docker.env
+    ports:
+      - 82:${PORT}
+    #    networks:
+    #      - webnet
+    depends_on:
+      - redis
+      - mongodb
+    command: npm run start:dev
+  nginx:
+    build:
+      context: .
+      dockerfile: ./DockerfileNginx
+    ports:
+      - '80:80'
+    depends_on:
+      - server1
+      - server2
+#networks:
+#  webnet:

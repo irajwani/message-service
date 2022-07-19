@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
-
-const { ObjectId } = MongooseSchema.Types;
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class User {
@@ -16,9 +14,6 @@ export class User {
 
   @Prop({ required: true, index: true })
   name: string;
-
-  @Prop({ ref: 'Room', required: false })
-  room: string;
 
   @Prop({ ref: 'User', default: [], required: false })
   blockedUsers: string[];

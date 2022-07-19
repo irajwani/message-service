@@ -1,4 +1,4 @@
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AddMessageDto {
@@ -7,7 +7,7 @@ export class AddMessageDto {
   text: string;
 
   @IsOptional()
-  @IsMongoId()
+  @IsUUID()
   sender?: string;
 
   @IsString()
@@ -17,8 +17,4 @@ export class AddMessageDto {
     description: 'recipient username',
   })
   recipient: string;
-
-  @IsOptional()
-  @IsMongoId()
-  roomId?: string;
 }

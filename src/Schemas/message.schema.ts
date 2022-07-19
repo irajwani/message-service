@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
-
-const { ObjectId } = MongooseSchema.Types;
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Message {
@@ -16,9 +14,6 @@ export class Message {
 
   @Prop({ ref: 'User' })
   recipient: string;
-
-  @Prop({ ref: 'Room' })
-  room: string;
 }
 
 export type MessageDocument = Message & Document;

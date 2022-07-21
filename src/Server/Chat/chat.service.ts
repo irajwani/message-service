@@ -24,7 +24,7 @@ export class ChatService {
 
       const { _id: senderId } = await this.userService.getUser(sender);
 
-      // todo: this service should utilize DB transactions to ensure atomicity of DB across multiple DB operations.
+      // TODO: this service should utilize DB transactions to ensure atomicity of DB across multiple DB operations.
 
       const { _id: recipientId, blockedUsers } =
         await this.userService.getUserByUsername(recipientUserName);

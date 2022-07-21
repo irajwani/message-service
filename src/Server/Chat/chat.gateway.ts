@@ -51,11 +51,10 @@ export class ChatGateway
   private readonly serviceId: string;
 
   public connectedSockets: Map<string, Socket[]> = new Map();
+  public connectedUsers: Map<string, string> = new Map();
 
   constructor(
     private readonly configService: ConfigService,
-    @InjectModel(Message.name)
-    private messageRepository: Model<MessageDocument>,
     private chatService: ChatService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
@@ -71,7 +70,7 @@ export class ChatGateway
     this.subscriberClient.subscribe(this.serviceId);
 
     this.subscriberClient.on('message', (channel, payload) => {
-      console.log('received a message');
+      console.log('TANAKA', channel);
       const data: AddMessageDto = JSON.parse(payload);
       this.broadcastMessage(data, true);
       this.chatService.addMessage(data);
@@ -80,9 +79,13 @@ export class ChatGateway
     await this.channelDiscovery();
   }
 
+  async onModuleDestroy() {
+    this.discoveryInterval && clearTimeout(this.discoveryInterval);
+  }
+
   async handleConnection(client: Socket): Promise<void> {
     try {
-      // todo: retrieve token from headers
+      // TODO: retrieve token from headers
       const token = client.handshake.query.token.toString();
       const payload = this.authService.verifyAccessToken(token);
       const user = payload && (await this.userService.getUser(payload.sub));
@@ -101,11 +104,11 @@ export class ChatGateway
         user._id,
       );
       this.connectedSockets.set(user._id, [...existingClients, client]);
+      this.connectedUsers.set(client.id, user._id);
       client.emit(
         'message',
         messages.map((m) => m.text),
       );
-      console.log(this.connectedSockets);
     } catch (e) {
       throw new ForbiddenException();
     }
@@ -127,10 +130,6 @@ export class ChatGateway
     });
   }
 
-  async onModuleDestroy() {
-    this.discoveryInterval && clearTimeout(this.discoveryInterval);
-  }
-
   private async channelDiscovery() {
     this.redisClient.setex(this.serviceId, 3, Date.now().toString());
     this.discoveryInterval = setTimeout(() => {
@@ -143,9 +142,16 @@ export class ChatGateway
     fromRedisChannel: boolean,
   ): Promise<void> {
     const { sender, text } = addMessageDto;
+    // emit message to all of sender's open devices/clients
     this.connectedSockets
       .get(sender)
       ?.forEach((socket) => socket.emit('message', [text]));
+
+    //TODO: enhance client system so above process is posssible for recipientId
+    this.connectedSockets
+      .get('2f60823c-4d4c-41ed-8746-035b1c9ed72d')
+      ?.forEach((socket) => socket.emit('message', [text]));
+
     if (!fromRedisChannel) {
       this.redisClient.keys('SOCKET_CHANNEL_*', (err, ids) => {
         ids
@@ -159,47 +165,8 @@ export class ChatGateway
 
   @SubscribeMessage('message')
   async onMessage(client: Socket, addMessageDto: AddMessageDto): Promise<void> {
-    console.log('message received', addMessageDto);
+    const userId = this.connectedUsers.get(client.id);
+    addMessageDto.sender = userId;
     await this.broadcastMessage(addMessageDto, false);
-    await this.chatService.addMessage(addMessageDto);
   }
-
-  // const { userId } = this.connectedSockets.get(client.id);
-  // const user = await this.userService.getUser(userId);
-  //
-  // addMessageDto.sender = userId;
-
-  // const message = await this.chatService.addMessage(addMessageDto);
-  // client.emit('message', [message.text]);
-
-  // @SubscribeMessage('join')
-  // async onRoomJoin(client: Socket, joinRoomDto: JoinRoomDto) {
-  //   const { roomId } = joinRoomDto;
-  //   const limit = Constants.ROOM_MESSAGES_LIMIT;
-  //
-  //   const room = await this.roomService.findOneAndPopulate(roomId);
-  //
-  //   if (!room) return;
-  //
-  //   const userId = this.connectedSockets.get(client.id);
-  //   const messages = room.messages
-  //     .slice(limit * -1)
-  //     .map((message) => message.text);
-  //
-  //   await this.roomService.updateRoomWithUser({ roomId, user: userId });
-  //   await this.userService.updateUserRoom(userId, room._id);
-  //
-  //   client.join(roomId);
-  //   client.emit('message', messages);
-  // }
-  //
-  // @SubscribeMessage('leave')
-  // async onRoomLeave(client: Socket, leaveRoomDto: LeaveRoomDto) {
-  //   const { roomId } = leaveRoomDto;
-  //   const userId = this.connectedSockets.get(client.id);
-  //
-  //   await this.userService.updateUserRoom(userId, null);
-  //
-  //   client.leave(roomId);
-  // }
 }

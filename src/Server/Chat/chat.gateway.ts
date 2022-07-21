@@ -1,6 +1,5 @@
 import {
   ForbiddenException,
-  Injectable,
   OnModuleDestroy,
   OnModuleInit,
   UsePipes,
@@ -15,18 +14,15 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import Redis from 'ioredis';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 import { AddMessageDto } from './Validation/add-message.dto';
 
 import { UserService } from '../User/user.service';
 import { AuthService } from '../Auth/auth.service';
 
-import Constants from '../../Common/constants';
 import { ChatService } from './chat.service';
-import { Message, MessageDocument } from '../../Schemas/message.schema';
 import { ConfigService } from '@nestjs/config';
+import { IMessage } from './Types/message';
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -71,9 +67,8 @@ export class ChatGateway
 
     this.subscriberClient.on('message', (channel, payload) => {
       console.log('TANAKA', channel);
-      const data: AddMessageDto = JSON.parse(payload);
+      const data: IMessage = JSON.parse(payload);
       this.broadcastMessage(data, true);
-      this.chatService.addMessage(data);
     });
 
     await this.channelDiscovery();
@@ -138,10 +133,10 @@ export class ChatGateway
   }
 
   async broadcastMessage(
-    addMessageDto: AddMessageDto,
+    message: IMessage,
     fromRedisChannel: boolean,
   ): Promise<void> {
-    const { sender, text } = addMessageDto;
+    const { sender, recipient, text } = message;
     // emit message to all of sender's open devices/clients
     this.connectedSockets
       .get(sender)
@@ -149,15 +144,16 @@ export class ChatGateway
 
     //TODO: enhance client system so above process is posssible for recipientId
     this.connectedSockets
-      .get('2f60823c-4d4c-41ed-8746-035b1c9ed72d')
+      .get(recipient)
       ?.forEach((socket) => socket.emit('message', [text]));
 
     if (!fromRedisChannel) {
+      // Publish to all channels that are not the current server's channel
       this.redisClient.keys('SOCKET_CHANNEL_*', (err, ids) => {
         ids
           .filter((p) => p !== this.serviceId)
           .forEach((id) => {
-            this.publisherClient.publish(id, JSON.stringify(addMessageDto));
+            this.publisherClient.publish(id, JSON.stringify(message));
           });
       });
     }
@@ -167,6 +163,7 @@ export class ChatGateway
   async onMessage(client: Socket, addMessageDto: AddMessageDto): Promise<void> {
     const userId = this.connectedUsers.get(client.id);
     addMessageDto.sender = userId;
-    await this.broadcastMessage(addMessageDto, false);
+    const message: IMessage = await this.chatService.addMessage(addMessageDto);
+    await this.broadcastMessage(message, false);
   }
 }

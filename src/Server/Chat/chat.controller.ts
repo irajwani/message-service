@@ -16,8 +16,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AddMessageDto } from '../Chat/Validation/add-message.dto';
 import { ChatService } from './chat.service';
 
-@ApiTags('chat')
 @Controller('chat')
+@ApiTags('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
@@ -33,11 +33,4 @@ export class ChatController {
     const message = await this.chatService.addMessage(addMessageDto);
     return response.status(HttpStatus.OK).json(message);
   }
-
-  // @UseGuards(JwtAuthGuard, OwnershipGuard)
-  // @ApiBearerAuth()
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   return this.roomService.remove(id);
-  // }
 }

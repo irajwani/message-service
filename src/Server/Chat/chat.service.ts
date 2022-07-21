@@ -42,9 +42,4 @@ export class ChatService {
       throw err;
     }
   }
-
-  // async remove(id: string) {
-  //   const room = await this.getRoomById(id);
-  //   return this.roomRepository.remove(room);
-  // }
 }

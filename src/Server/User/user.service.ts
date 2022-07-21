@@ -63,7 +63,7 @@ export class UserService {
       const { _id: blockedUserId } = await this.getUserByUsername(username);
       await this.userRepository.updateOne(
         { _id: userId },
-        { $addToSet: { blockedUsers: [blockedUserId] } },
+        { $addToSet: { blockedUsers: blockedUserId } },
       );
       return;
     } catch (e) {

@@ -3,17 +3,13 @@ services:
   redis:
     container_name: redis
     image: redis:latest
-#    networks:
-#      - webnet
     env_file:
       - docker.env
     ports:
-      - 6379:6379
+      - ${REDIS_PORT}:${REDIS_PORT}
   mongodb:
     container_name: mongodb
     image: mongo:latest
-#    networks:
-#      - webnet
     env_file:
       - docker.env
     environment:
@@ -34,8 +30,6 @@ services:
       - docker.env
     ports:
       - 81:${PORT}
-#    networks:
-#      - webnet
     depends_on:
       - redis
       - mongodb
@@ -53,8 +47,6 @@ services:
       - docker.env
     ports:
       - 82:${PORT}
-    #    networks:
-    #      - webnet
     depends_on:
       - redis
       - mongodb
@@ -63,10 +55,10 @@ services:
     build:
       context: .
       dockerfile: ./DockerfileNginx
+    env_file:
+      - docker.env
     ports:
-      - '80:80'
+      - ${NGINX_PORT}:${NGINX_PORT}
     depends_on:
       - server1
       - server2
-#networks:
-#  webnet:

@@ -18,8 +18,7 @@ export class Log {
   @Prop({ enum: LogTypes })
   type: string;
 
-  // should reference Users collection
-  @Prop()
+  @Prop({ ref: 'User' })
   user: string;
 }
 

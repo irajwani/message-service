@@ -105,6 +105,7 @@ export class ChatGateway
         messages.map((m) => m.text),
       );
     } catch (e) {
+      console.log(e);
       throw new ForbiddenException();
     }
   }

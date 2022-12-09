@@ -1,6 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 
-import AppConfig from './appConfig';
+import AppConfig from './app.config';
 
 export default ConfigModule.forRoot({
   isGlobal: true,
